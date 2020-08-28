@@ -6,8 +6,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 module.exports = {
   entry: {
     styles: './assets/scss/app.scss',
-    app: './assets/js/app.js',
-    province: './routes/question-province/js/question-province.js',
+    app: './assets/js/app.js'
   },
   output: {
     filename: 'js/[name].js',

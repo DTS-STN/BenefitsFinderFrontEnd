@@ -1,6 +1,6 @@
 {%- macro dropdown(key, values, selectedValue, question, errors, attributes) -%}
     <div class="{{ 'has-error' if errors and errors[key] }} outline-none">
-      <label for="{{ key }}-select" id="{{ name }}__label">
+      <label for="{{ key }}-select" id="{{ question_name }}__label">
           {% if attributes.required %}
               <strong aria-hidden="true" class="required font-normal">*</strong>
           {% endif %}

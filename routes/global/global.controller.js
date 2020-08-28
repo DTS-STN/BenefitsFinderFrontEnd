@@ -24,6 +24,8 @@ module.exports = (app, table) => {
   app.get('/clear', (req, res) => {
     req.session.formdata = null
     req.session.history = []
+    req.session.currentquestionid = undefined
+    req.session.currentquestion = undefined
     res.locals.hideBackButton = true
     res.redirect(302, '/')
   })

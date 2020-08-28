@@ -222,5 +222,8 @@
   "your_situation.unchanged_income.3": "Vous êtes retraité.",
   "your_situation.unchanged_income.4": "Vous étiez étudiant dans une institution postsecondaire lors de l’année scolaire 2019-20 et ne pouvez trouver un emploi.",
   "your_situation.unchanged_income.5": "Vous obtiendrez un diplôme d’études secondaires pour l’année scolaire 2019-2020 et avez appliqué pour un programme d’études postsecondaires débutant avant le 1er février 2021.",
-  "your_situation.unchanged_income.none": "Aucune de ces options."
+  "your_situation.unchanged_income.none": "Aucune de ces options.",
+  "You must select one of the options listed below": "Vous devez choisir une option ci-dessous",
+  "The value you have specified is not valid": "La valeur que vous avez indiquée n'est pas valable",
+  "Vous devez choisir une option ci-dessous": "Vous devez choisir une option ci-dessous"
 }

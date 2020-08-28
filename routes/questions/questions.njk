@@ -1,0 +1,34 @@
+{% extends "base.njk" %}
+
+{% block content %}
+
+    <h1> {{display_name}} </h1>
+    <div>
+        {% call form() %}
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            {% if type == 'select' %}
+              {{ dropdown(question_name,
+                  options,
+                  data[question_name],
+                  description,
+                  errors,
+                  { required: true })
+              }}
+            {% elif type == 'radio' %}
+             {{ radioButtons(question_name,
+                options,
+                data[question_name],
+                description,
+                errors,
+                {required: true})
+             }}
+            {% endif %}
+            {{ formButtons() }}
+        {% endcall %}
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}
