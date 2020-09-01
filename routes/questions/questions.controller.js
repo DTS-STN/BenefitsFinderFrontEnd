@@ -39,7 +39,6 @@ module.exports = (app, route) => {
   route.draw(app)
     .get((req, res) => {
       let currentQuestionId = req.session.currentquestionid
-      console.log(currentQuestionId)
       res.locals.simpleRoute = (name, locale) => simpleRoute(name, locale)
       const locale = res.locale
 
@@ -137,7 +136,6 @@ module.exports = (app, route) => {
         return res.redirect('back')
       }
       else{
-        console.log("not")
         fetchQuestion(req, res, currentQuestionId)
           .then(
             (data) => {
