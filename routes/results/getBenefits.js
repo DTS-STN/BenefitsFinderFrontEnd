@@ -1,3 +1,5 @@
+require("node-fetch")
+require("cross-fetch/polyfill")
 const glob = require('glob')
 const path = require('path')
 
@@ -36,408 +38,40 @@ function match(input, pattern, result) {
 }
 
 const getBenefits = (data, featureFlags) => {
-  var results = []
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: ['lost-job', 'employer-closed'],
-        cerb: "not-receiving-cerb",
+  /* eslint-disable-next-line no-undef */
+  return fetch(process.env.STRAPI_ENDPOINT + "/benefits")
+    .then(
+      (benefitsResponse) =>{
+        if(benefitsResponse.ok){
+          return benefitsResponse.json()
+        }
+        else{
+          throw new Error("Benefits endpoint returned an invalid response")
+        }
       },
-      'cerb',
-    ),
   )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: ['lost-job', 'employer-closed'],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-no",
+    .then(
+      (benefitsData) =>{
+        const results = []
+        if(Array.isArray(benefitsData) && benefitsData.length > 0){
+          for(const i in benefitsData){
+            const benefitsObj = benefitsData[i]
+            if(Object.prototype.hasOwnProperty.call(benefitsObj, "rule_definition") && Object.prototype.hasOwnProperty.call(benefitsObj, "benefit_name")){
+              results.push(
+                match(
+                  data,
+                  benefitsObj.rule_definition,
+                  benefitsObj.benefit_name,
+                ),
+              )
+            }
+          }
+        }
+        return results.filter((v) => typeof v !== "undefined")
       },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-some-income',
-        some_income: ['hours-reduced', 'employed-lost-a-job'],
-        reduced_income: '1000_or_less',
-        cerb: "not-receiving-cerb",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-some-income',
-        some_income: ['hours-reduced', 'employed-lost-a-job'],
-        reduced_income: '1000_or_less',
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-no",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: 'sick-or-quarantined',
-        cerb:"not-receiving-cerb",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: 'sick-or-quarantined',
-        cerb:"receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-no",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-some-income',
-        some_income: 'quarantine',
-        cerb:"not-receiving-cerb",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-some-income',
-        some_income: 'quarantine',
-        cerb:"receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-no",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: [
-          'self-employed-closed',
-          'unpaid-leave-to-care',
-          'parental-recently-cant-return',
-          'ei-recently-claim-ended',
-        ],
-        cerb:"not-receiving-cerb",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: [
-          'self-employed-closed',
-          'unpaid-leave-to-care',
-          'parental-recently-cant-return',
-          'ei-recently-claim-ended',
-        ],
-        cerb:"receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-no",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-some-income',
-        some_income: 'selfemployed-some-income',
-        reduced_income: '1000_or_less',
-        cerb:"not-receiving-cerb",
-      },
-      'cerb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-some-income',
-        some_income: 'selfemployed-some-income',
-        reduced_income: '1000_or_less',
-        cerb:"receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-no",
-      },
-      'cerb',
-    ),
-  )
-
-  // CRB- CERB EXHAUSTED
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-all-income",
-        no_income: [
-          "lost-job",
-          "employer-closed",
-          "self-employed-closed",
-          "sick-or-quarantined",
-          "student_2019_20",
-          "ei-recently-claim-ended",
-        ],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-yes",
-      },
-      "crb",
-    ),
-  )
+    )
 
 
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-some-income",
-        some_income: [
-          "hours-reduced",
-          "employed-lost-a-job",
-          "selfemployed-some-income",
-          "retired",
-        ],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-yes",
-      },
-      "crb",
-    ),
-  )
-
-  // CRCB CERB-EXHAUSTED
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-all-income",
-        no_income: [
-          'child-or-dependent-school-closed',
-          'unpaid-leave-to-care',
-        ],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-yes",
-      },
-      "crcb",
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-some-income",
-        some_income: 'child-or-dependent-school-closed',
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-yes",
-      },
-      "crcb",
-    ),
-  )
-
-  // CRB - CERB ALMOST EXHAUSTED
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-all-income",
-        no_income: [
-          "lost-job",
-          "employer-closed",
-          "self-employed-closed",
-          "parental-recently-cant-return",
-          "student_2019_20",
-          "ei-recently-claim-ended",
-        ],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-almost",
-      },
-      "crb",
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-some-income",
-        some_income: [
-          "hours-reduced",
-          "employed-lost-a-job",
-          "selfemployed-some-income",
-          "retired",
-        ],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-almost",
-      },
-      "crb",
-    ),
-  )
-
-
-  // CRCB - CERB ALMOST EXHAUSTED
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-all-income",
-        no_income: [
-          'child-or-dependent-school-closed',
-          'unpaid-leave-to-care',
-        ],
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-almost",
-      },
-      "crcb",
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-some-income",
-        some_income: 'child-or-dependent-school-closed',
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-almost",
-      },
-      "crcb",
-    ),
-  )
-
-  // CSRB
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-all-income",
-        no_income: 'sick-or-quarantined',
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-almost",
-      },
-      "crsb",
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: "lost-some-income",
-        some_income: 'quarantine',
-        cerb: "receiving-cerb",
-        cerb_exhausted: "cerb-exhausted-almost",
-      },
-      "crsb",
-    ),
-  )
-
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-all-income',
-        no_income: 'student_2019_20',
-      },
-      'cesb',
-    ),
-  )
-
-  results.push(
-    match(
-      data,
-      {
-        lost_job: 'lost-no-income',
-        unchanged_income: ['student_2019_20', 'high_school_grad'],
-      },
-      'cesb',
-    ),
-  )
-
-  results.push(match(data, { gross_income: 'over_5k' }, 'cerb'))
-
-  results.push(
-    match(
-      data,
-      {
-        some_income: 'hours-reduced',
-        reduced_income: '1001_or_more',
-      },
-      'ei_workshare',
-    ),
-  )
-
-  results.push(
-    match(data, { mortgage_payments: 'yes-mortgage' }, 'mortgage_deferral'),
-  )
-
-  results.push(match(data, { mortgage_payments: 'yes-rent' }, 'rent_help'))
-  results.push(match(data, { student_debt: 'yes' }, 'student_loan'))
-
-  results.push(match(data, { oas: ['oas', 'allowance', 'survivor'] }, 'oas'))
-
-  if (featureFlags.enableDtc){
-
-    // DTC Benefits
-    results.push(match(data, { oas: ['oas', 'allowance', 'survivor'], dtc: 'yourself', dtc_individual: 'yes' }, 'dtc_oas'))
-    results.push(match(data, { dtc: 'yourself', dtc_individual: 'no' }, 'dtc_apply'))
-    results.push(match(data, { oas: 'no', dtc: 'yourself', dtc_individual: 'yes' }, 'dtc_individual'))
-
-    results.push(match(data, { dtc: 'child', dtc_child: 'yes' }, 'dtc_child'))
-    results.push(match(data, { dtc: 'child', dtc_child: 'no' }, 'dtc_apply'))
-  }
-
-  results.push(match(data, { rrif: 'yes' }, 'rrif'))
-
-  results.push(
-    match(
-      data,
-      {
-        plans_for_school: 'yes',
-      },
-      'student_financial_aid',
-    ),
-  )
-
-  return results.filter((v) => v !== undefined)
 }
 
 const getProvincialBenefits = (data) => {
