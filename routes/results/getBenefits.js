@@ -39,7 +39,7 @@ function match(input, pattern, result) {
 
 const getBenefits = (data, featureFlags) => {
   /* eslint-disable-next-line no-undef */
-  return fetch(process.env.STRAPI_ENDPOINT + "/benefits")
+  return fetch(process.env.STRAPI_ENDPOINT + "/rules")
     .then(
       (benefitsResponse) =>{
         if(benefitsResponse.ok){

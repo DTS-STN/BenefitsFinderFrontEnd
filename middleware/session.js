@@ -10,15 +10,17 @@ const session = (req, res, next) => {
   // remove the back button if the session has no history
   if (
     req.session === undefined ||
-    req.session.history === undefined ||
-    req.session.history.length === 0){
+    req.session.previousquestionid === undefined ||
+    req.session.previousquestionid === req.session.currentquestionid)
+  {
+    console.log(req.session.previousquestionid)
     res.locals.hideBackButton = true
-  } else if(req.session.history[req.session.history.length - 1] === req.url){
-    req.session.history.pop()
-    if( req.session.history.length === 0){
-      res.locals.hideBackButton = true
-    }
   }
+  else{
+    console.log(req.session.previousquestionid)
+    console.log(req.session.currentquestionid)
+  }
+
 
   next()
 }

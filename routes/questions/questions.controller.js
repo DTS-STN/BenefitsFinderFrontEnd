@@ -4,6 +4,7 @@ const {
   routeUtils,
   simpleRoute,
   saveSessionData,
+  setHistory,
 } = require('./../../utils')
 
 
@@ -45,8 +46,13 @@ module.exports = (app, route) => {
       // no existing question load the first question
       if(typeof currentQuestionId === "undefined"){
         req.session.currentquestionid = 1
+        req.session.previousquestionid = 1
+        req.session.questionstraversed = []
         currentQuestionId = 1
       }
+
+      // set the history
+      setHistory(req, res)
 
       fetchQuestion(req, res, currentQuestionId)
         .then(
@@ -62,6 +68,7 @@ module.exports = (app, route) => {
               description_fr: descriptionFr,
               options,
             } = data
+
 
             req.session.currentquestion= nameEn
             req.session.currentquestionid = id
@@ -124,6 +131,8 @@ module.exports = (app, route) => {
       const currentQuestionName = req.session.currentquestion
       const locale = res.locals
       const jsonData = JSON.parse(JSON.stringify(req.body))
+
+
       if (typeof currentQuestionId === "undefined" || typeof currentQuestionName === "undefined"){
         return res.redirect(res.locals.routePath('questions'))
       }
@@ -160,12 +169,20 @@ module.exports = (app, route) => {
               }
 
               saveSessionData(req)
+              req.session.questionstraversed.push(
+                {
+                  id: currentQuestionId,
+                  name: currentQuestionName,
+                },
+              )
 
               if(questionsFollowingOption[responseValue]){
+                req.session.previousquestionid = req.session.currentquestionid
                 req.session.currentquestionid = questionsFollowingOption[responseValue]
                 return res.redirect(res.locals.routePath('questions'))
               }
               else if(nextQuestions && nextQuestions.length > 0 ){
+                req.session.previousquestionid = req.session.currentquestionid
                 req.session.currentquestionid = nextQuestions[0].id
                 return res.redirect(res.locals.routePath('questions'))
               }

@@ -7,7 +7,6 @@ const setHistory = (req, res) => {
   {
     req.session.history.push(req.url)
   }
-
 }
 
 module.exports = {
