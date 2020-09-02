@@ -30,30 +30,43 @@ module.exports = (app, route) => {
       // get All Benefits (except provinces and GST)
       const benefitsFullList = _.pull(getAllBenefits(req.locals.featureFlags), 'gst_credit');
 
-      const benefits = getBenefits(data, req.locals.featureFlags);
-      let unavailableBenefits = benefitsFullList.filter((benefit) => !benefits.includes(benefit))
+      return getBenefits(data, req.locals.featureFlags)
+        .then(
+          (benefits) => {
+            let unavailableBenefits = benefitsFullList.filter((benefit) => !benefits.includes(benefit))
 
-      // We need to remove DTC if the user matches one of the variants
-      if (benefits.find((ele) => ele.match(/^dtc_*/)) !== undefined){
-        unavailableBenefits = unavailableBenefits.filter((ele) => ele !== 'dtc')
-      }
+            // We need to remove DTC if the user matches one of the variants
+            if (benefits.find((ele) => ele.match(/^dtc_*/)) !== undefined){
+              unavailableBenefits = unavailableBenefits.filter((ele) => ele !== 'dtc')
+            }
 
-      const provincial = getProvincialBenefits(data);
+            const provincial = getProvincialBenefits(data);
 
-      let title = res.__n('results_title', benefits.length);
+            let title = res.__n('results_title', benefits.length);
 
-      if (benefits.length === 0) {
-        title = res.__('results_title_no_results');
-      }
+            if (benefits.length === 0) {
+              title = res.__('results_title_no_results');
+            }
 
-      res.render(name, routeUtils.getViewData(req, {
-        benefits: benefits,
-        unavailableBenefits: unavailableBenefits,
-        provincial: provincial,
-        no_results: benefits.length === 0,
-        title: title,
-        data: data,
-      }))
+            res.render(name, routeUtils.getViewData(req, {
+              benefits: benefits,
+              unavailableBenefits: unavailableBenefits,
+              provincial: provincial,
+              no_results: benefits.length === 0,
+              title: title,
+              data: data,
+            }))
+          },
+        )
+        .catch((err) => {
+          res.status(500)
+          res.render(
+            '500', {
+              message: err,
+            },
+          )
+        })
+
     })
     .post(route.applySchema(Schema), route.doRedirect())
 }

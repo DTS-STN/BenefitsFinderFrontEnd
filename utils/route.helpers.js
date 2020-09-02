@@ -62,7 +62,6 @@ class Route {
    */
   constructor(table, index, conf) {
     this.table = table
-    console.log(table)
     this.index = index
     Object.assign(this, conf)
 
