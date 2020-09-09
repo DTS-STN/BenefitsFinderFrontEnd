@@ -1,7 +1,5 @@
 require("node-fetch")
 require("cross-fetch/polyfill")
-const glob = require('glob')
-const path = require('path')
 
 /*
 This method checks to see if an input object matches a pattern
@@ -46,7 +44,7 @@ const getBenefits = (data, featureFlags) => {
           return benefitsResponse.json()
         }
         else{
-          throw new Error("Benefits endpoint returned an invalid response")
+          throw new Error("Rules endpoint returned an invalid response")
         }
       },
   )
@@ -74,43 +72,45 @@ const getBenefits = (data, featureFlags) => {
 
 }
 
-const getProvincialBenefits = (data) => {
-  return data.province ? 'province-' + data.province : false
-}
-
-const getAllBenefits = (featureFlags) => {
-  const benefitList = []
-
-  let ignore
-  if (featureFlags.enableDtc) {
-    ignore = ['province-*', 'dtc_*.njk']
-  } else {
-    ignore = ['province-*', 'dtc*.njk']
-  }
-
-  // Get a list of all the benefit cards
-  // Ignore provincial benefits and the dtc variants
-  const files = glob.sync('**/*.njk', {
-    cwd: path.join(__dirname, '../../views/benefits'),
-    ignore,
-  })
-
-  // Grab the benefit name portion of the filename
-  files.forEach((file) => {
-    const fileParts = file.split('-')
-    benefitList.push(fileParts[0])
-  })
-
-  // We just the unique items in the list
-  const benefitsFullList = benefitList.filter(function (item, pos) {
-    return benefitList.indexOf(item) === pos
-  })
-
-  return benefitsFullList
+const getAllBenefits = (locale = "en") => {
+  /* eslint-disable-next-line no-undef */
+  return fetch(process.env.STRAPI_ENDPOINT + "/benefits").then(
+    (response) => {
+      if(response.ok){
+        return response.json()
+      }
+      else{
+        throw new Error("Benefits endpoint returned an invalid response")
+      }
+    },
+  ).then(
+    (json) => {
+      const benefitObj = {}
+      if(Array.isArray(json) && json.length > 0){
+        for(let i in json){
+          i = json[i]
+          if( i.benefit_id){
+            benefitObj[i.benefit_id] = {
+              id: i.benefit_id,
+              header: i[`title_${locale}`],
+              link: i[`info_link_${locale}`],
+              linkText: i[`info_link_text_${locale}`],
+              description: i[`description_${locale}`],
+              features: Array.isArray(i.benefit_features) ? i.benefit_features.map(
+                (feature) => {
+                  return feature[`feature_name_${locale}`]
+                },
+              ): [],
+            }
+          }
+        }
+      }
+      return benefitObj
+    },
+  )
 }
 
 module.exports = {
   getBenefits,
-  getProvincialBenefits,
   getAllBenefits,
 }

@@ -1,0 +1,35 @@
+{% macro benefitCard(benefitId, header, features, link, linkText, description) %}
+
+  <details class="benefit" data-cy="{{ benefitId}}-benefit" open>
+    <summary class="benefit__header" id="{{ benefitId }}">
+      <h3>
+        {{header}}
+      </h3>
+    </summary>
+
+    <div class="benefit__main">
+      <div class="benefit__preamble mb-4">
+        {% block preamble %}{% endblock %}
+      </div>
+      <ul class="benefit__featured_list">
+        {% for feature in features %}
+           {{ benefitLi("<strong>" + feature + "</strong>")}}
+        {% endfor %}
+      </ul>
+
+      <div class="benefit__body">
+        {% markdown %}
+          {{description}}
+        {% endmarkdown %}
+      </div>
+
+      {{  infoLink(
+            benefitId,
+            link,
+            linkText
+          )
+       }}
+    </div>
+  </details>
+
+{% endmacro %}

@@ -136,6 +136,9 @@ app.routes = configRoutes(app, routes, locales)
 
 // view engine setup
 const nunjucks = require('nunjucks')
+const markdown = require('nunjucks-markdown')
+const marked = require('marked')
+
 
 const env = nunjucks
   .configure([...app.get('views'), 'views/macros'], {
@@ -145,6 +148,9 @@ const env = nunjucks
   .addGlobal('$env', process.env)
 
 addNunjucksFilters(env)
+
+// register markdown extension
+markdown.register(env, marked)
 
 nunjucks.installJinjaCompat()
 

@@ -1,6 +1,6 @@
-const { routeUtils, getSessionData } = require('./../../utils')
+const { routeUtils, getSessionData, simpleRoute } = require('./../../utils')
 const { Schema } = require('./schema.js')
-const { getBenefits, getProvincialBenefits, getAllBenefits } = require('./getBenefits')
+const { getBenefits, getAllBenefits } = require('./getBenefits')
 const _ = require('lodash')
 
 
@@ -27,20 +27,38 @@ module.exports = (app, route) => {
     .get((req, res) => {
       const data = getData(req, res);
 
-      // get All Benefits (except provinces and GST)
-      const benefitsFullList = _.pull(getAllBenefits(req.locals.featureFlags), 'gst_credit');
+      res.locals.simpleRoute = (name, locale) => simpleRoute(name, locale)
 
-      return getBenefits(data, req.locals.featureFlags)
+      return Promise.all([getBenefits(data, req.locals.featureFlags), getAllBenefits(res.locale)])
         .then(
-          (benefits) => {
-            let unavailableBenefits = benefitsFullList.filter((benefit) => !benefits.includes(benefit))
+          (results) => {
+            const benefitsApplicable = results[0]
+            const allBenefits = results[1]
 
-            // We need to remove DTC if the user matches one of the variants
-            if (benefits.find((ele) => ele.match(/^dtc_*/)) !== undefined){
-              unavailableBenefits = unavailableBenefits.filter((ele) => ele !== 'dtc')
+            const benefits = []
+            const benefitNames = []
+
+            for(let benefit in benefitsApplicable ){
+              benefit = benefitsApplicable[benefit]
+              if(allBenefits[benefit]){
+                benefits.push(
+                  allBenefits[benefit],
+                )
+                benefitNames.push(benefit)
+              }
             }
 
-            const provincial = getProvincialBenefits(data);
+            const unavailableBenefits = Object.keys(allBenefits).filter(
+              (value) => !benefitNames.includes(value) && !value.startsWith("province-"),
+            ).map(
+              (value) => {
+                return allBenefits[
+                  value
+                ]
+              },
+            )
+
+            const provincial = data.province ? allBenefits["province-" + data.province]: undefined
 
             let title = res.__n('results_title', benefits.length);
 
