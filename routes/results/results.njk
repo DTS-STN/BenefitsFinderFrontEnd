@@ -42,7 +42,16 @@
 
                 <div data-cy="eligible-benefit-list">
                     {% for benefit in benefits %}
-                        {% include "benefits/" + benefit + "-" + getLocale() +  ".njk" %}
+                        {{
+                        benefitCard(
+                          benefit.id,
+                          benefit.header,
+                          benefit.features,
+                          benefit.link,
+                          benefit.linkText,
+                          benefit.description
+                        )
+                      }}
                     {% endfor %}
                 </div>
             </div>
@@ -63,7 +72,16 @@
 
             <div data-cy="other-benefits-list">
                 {% if provincial %}
-                    {% include "benefits/" + provincial + "-" + getLocale() +  ".njk" %}
+                   {{
+                     benefitCard(
+                       provincial.id,
+                       provincial.header,
+                       provincial.features,
+                       provincial.link,
+                       provincial.linkText,
+                       provincial.description
+                     )
+                   }}
                 {% endif %}
             </div>
         </div>
@@ -97,7 +115,16 @@
 
             <div class="benefits__list mt-4" id="unavailableBenefitsList" aria-labelledby="unavailableBenefitsButton">
                 {% for benefit in unavailableBenefits %}
-                    {% include "benefits/" + benefit + "-" + getLocale() +  ".njk" %}
+                  {{
+                    benefitCard(
+                      benefit.id,
+                      benefit.header,
+                      benefit.features,
+                      benefit.link,
+                      benefit.linkText,
+                      benefit.description
+                    )
+                  }}
                 {% endfor %}
             </div>
         </div>
