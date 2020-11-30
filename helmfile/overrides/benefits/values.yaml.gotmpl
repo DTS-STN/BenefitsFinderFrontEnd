@@ -6,9 +6,10 @@ ingress:
       enabled: true
       hosts:
       {{ if or (eq .Environment.Name "prod-blue") (eq .Environment.Name "prod-green") }}
-        - benefits.dts-stn.com
+        - benefits.{{ requiredEnv "BASE_DOMAIN" }}
+        - benefits.{{ .Environment.Name }}.{{ requiredEnv "BASE_DOMAIN" }}
       {{ end }}      
-        - benefits.{{ .Environment.Name }}.{{ requiredEnv "BASE_DOMAIN_DEV" }}.com
+        - benefits.{{ .Environment.Name }}.{{ requiredEnv "BASE_DOMAIN_DEV" }}
       annotations: {}
       # kubernetes.io/ingress.class: traefik
 port:
